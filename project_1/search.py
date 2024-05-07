@@ -86,18 +86,65 @@ def depthFirstSearch(problem):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    visited = set()  # Set to keep track of visited states
+    stack = util.Stack()  # Stack for DFS
+    stack.push((problem.getStartState(), []))  # Push the start state with an empty action list
+
+    while not stack.isEmpty():
+        currentState, actions = stack.pop()  # Pop the top state and actions from the stack
+        if currentState in visited:
+            continue  # Skip this state if it has already been visited
+        visited.add(currentState)  # Mark the current state as visited
+        if problem.isGoalState(currentState):
+            return actions  # Return the list of actions if goal is found
+
+        # Get successor states and push them onto the stack
+        for nextState, action, _ in problem.getSuccessors(currentState):
+            stack.push((nextState, actions + [action]))  # Append the new action to the list of actions
+
+    return []  # Return empty list if no solution is found
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    visited = set()
+    queue = util.Queue()
+    queue.push((problem.getStartState(), []))
 
+    while not queue.isEmpty():
+        currentState, actions = queue.pop()
+        if currentState in visited:
+            continue
+        visited.add(currentState)
+        if problem.isGoalState(currentState):
+            return actions
+        
+        for nextState, action, _ in problem.getSuccessors(currentState):
+            queue.push((nextState, actions + [action]))
+
+    return []
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    visited = set()  # Set to keep track of visited states
+    priorityQueue = util.PriorityQueue()  # Priority queue for UCS
+
+    # Push the start state with an empty action list and priority 0
+    priorityQueue.push((problem.getStartState(), []), 0)
+
+    while not priorityQueue.isEmpty():
+        currentState, actions = priorityQueue.pop()  # Pop the state and actions with the lowest cost
+        if currentState in visited:
+            continue  # Skip this state if it has already been visited
+        visited.add(currentState)  # Mark the current state as visited
+        if problem.isGoalState(currentState):
+            return actions  # Return the list of actions if goal is found
+        
+        # Expand the current state by generating successor states and actions
+        for nextState, action, _ in problem.getSuccessors(currentState):
+            newActions = actions + [action]  # Append the new action to the list of actions
+            cost = problem.getCostOfActions(newActions)  # Calculate the total cost of the new path
+            priorityQueue.push((nextState, newActions), cost)  # Push the successor state with its actions and cost into the priority queue
+
+    return []  # Return an empty list if no solution is found
 
 def nullHeuristic(state, problem=None):
     """
