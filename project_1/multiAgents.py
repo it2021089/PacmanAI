@@ -76,8 +76,53 @@ class MinimaxAgent(MultiAgentSearchAgent):
         gameState.isLose():
         Returns whether or not the game state is a losing state
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def minimax(state, depth, agentIndex):
+            if state.isWin() or state.isLose() or depth == self.depth:
+                return self.evaluationFunction(state)
+
+            if agentIndex == 0:  # Pacman's turn (maximize)
+                return max_value(state, depth)
+            else:  # Ghosts' turn (minimize)
+                return min_value(state, depth, agentIndex)
+
+        def max_value(state, depth):
+            v = float('-inf')
+            legalActions = state.getLegalActions(0)
+            if not legalActions:  # No more legal actions, return evaluation
+                return self.evaluationFunction(state)
+            
+            for action in legalActions:
+                successor = state.generateSuccessor(0, action)
+                value = minimax(successor, depth, 1)
+                v = max(v, value)
+            return v
+
+        def min_value(state, depth, agentIndex):
+            v = float('inf')
+            next_agent = (agentIndex + 1) % state.getNumAgents()
+            next_depth = depth + 1 if next_agent == 0 else depth
+
+            legalActions = state.getLegalActions(agentIndex)
+            if not legalActions:  # No more legal actions, return evaluation
+                return self.evaluationFunction(state)
+            
+            for action in legalActions:
+                successor = state.generateSuccessor(agentIndex, action)
+                value = minimax(successor, next_depth, next_agent)
+                v = min(v, value)
+            return v
+
+        # Find the best action for Pacman by starting the minimax process
+        best_action = None
+        best_value = float('-inf')
+        for action in gameState.getLegalActions(0):
+            successor = gameState.generateSuccessor(0, action)
+            value = minimax(successor, 0, 1)
+            if value > best_value:
+                best_value = value
+                best_action = action
+
+        return best_action
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
