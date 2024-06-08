@@ -425,6 +425,8 @@ class AStarFoodSearchAgent(SearchAgent):
         self.searchType = FoodSearchProblem
 
 def foodHeuristic(state, problem):
+    from util import manhattanDistance
+    from util import PriorityQueue
     """
     Your heuristic for the FoodSearchProblem goes here.
 
@@ -458,12 +460,43 @@ def foodHeuristic(state, problem):
     if len(remaining_food) == 0:
         return 0
 
-    # Calculate the total Manhattan distance from the current position
-    # to all remaining food pellets
-    total_manhattan_dist = sum(util.manhattanDistance(position, food) for food in remaining_food)
+    # Calculate the minimum spanning tree (MST) of the remaining food
+    def mst_cost(food_positions):
+        if not food_positions:
+            return 0
 
-    return total_manhattan_dist
+        # Start with the first food position
+        start = food_positions[0]
+        mst_cost = 0
+        visited = set()
+        pq = util.PriorityQueue()
 
+        # Push all edges from the start node to the priority queue
+        for food in food_positions:
+            if food != start:
+                pq.push((manhattanDistance(start, food), food), manhattanDistance(start, food))
+
+        visited.add(start)
+
+        while not pq.isEmpty():
+            cost, food = pq.pop()
+            if food not in visited:
+                visited.add(food)
+                mst_cost += cost
+                for next_food in food_positions:
+                    if next_food not in visited:
+                        pq.push((manhattanDistance(food, next_food), next_food), manhattanDistance(food, next_food))
+
+        return mst_cost
+
+    # Calculate the distance from Pacman to the closest food
+    min_pacman_food_dist = min(manhattanDistance(position, food) for food in remaining_food)
+
+    # Calculate the MST cost for the remaining food
+    mst_cost_food = mst_cost(remaining_food)
+
+    # Return the sum of the minimum distance from Pacman to the food and the MST cost of the food
+    return min_pacman_food_dist + mst_cost_food
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
     def registerInitialState(self, state):
